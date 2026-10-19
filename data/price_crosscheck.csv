@@ -1,0 +1,4 @@
+﻿company,date,provider,price_krw,url,use
+리노공업,2026-10-16,NAVER daily,70900,https://api.finance.naver.com/siseJson.naver?symbol=058470&requestType=1&startTime=20261016&endTime=20261016&timeframe=day,valuation reference
+리노공업,2026-10-16,한국경제 시세,70800,https://markets.hankyung.com/stock/058470/consensus,crosscheck only; 100KRW difference unresolved
+ISC,2026-10-16,NAVER daily,160000,https://api.finance.naver.com/siseJson.naver?symbol=095340&requestType=1&startTime=20261016&endTime=20261016&timeframe=day,same-date peer reference

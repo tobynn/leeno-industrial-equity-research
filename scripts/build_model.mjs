@@ -1,0 +1,220 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { Workbook, SpreadsheetFile } from '@oai/artifact-tool';
+const root=path.resolve(process.argv[2]??path.join(path.dirname(new URL(import.meta.url).pathname),'..'));
+const p=JSON.parse(await fs.readFile(path.join(root,'data/research_inputs.json'),'utf8'));
+const companyDetail=JSON.parse(await fs.readFile(path.join(root,'model/company_detail.json'),'utf8'));
+const expected=JSON.parse(await fs.readFile(path.join(root,'model/research_results.json'),'utf8'));
+const wb=Workbook.create();
+const names=['Summary','Inputs','Operating Build','Forecast','Cash Equity Bridge','DCF','RIM','PER','Diagnostics','Special Cases','Peer Data','Actuals Sources'];
+const sh=Object.fromEntries(names.map(n=>[n,wb.worksheets.add(n)]));
+const navy=p.color,green='#127443',blue='#174FA8',dark='#1B2535';
+const nf='#,##0.0;(#,##0.0);"-"';
+function V(s,c,v){sh[s].getRange(c).values=[[v]];}
+function F(s,c,v){if(s==='Inputs'&&v.startsWith('=IF($D$3=')){v=v.replace(/(?<=,)([A-I][0-9]+)(?=[,)])/g,'IF(ISNUMBER($1),$1,"MISSING")');}sh[s].getRange(c).formulas=[[v]];sh[s].getRange(c).format.font.color=v.includes('!')?green:dark;}
+function R(s,c,f){sh[s].getRange(c).setNumberFormat(f);}
+for(const n of names){const s=sh[n];s.showGridLines=false;s.getRange('A1:L145').format.font={name:'NanumGothic',size:10,color:dark};s.getRange('A1:B85').format.columnWidth=3;s.getRange('C1:C145').format.columnWidth=33;s.getRange('D1:I145').format.columnWidth=17;s.getRange('J1:L85').format.columnWidth=26;s.getRange('C1:L145').format.rowHeight=22;V(n,'C2',n==='Summary'?`${p.name} Equity Research`:n);s.getRange('C2:I2').format.font={size:15,bold:true,color:navy};V(n,'C4','Case selected');if(n!=='Inputs')F(n,'D4',"=Inputs!D3");s.getRange('D4').format.font.color=green;s.getRange('D8:I80').setNumberFormat(nf);s.freezePanes.freezeRows(7);}
+sh.Summary.tabColor=navy;sh.Inputs.tabColor='#7893A8';
+V('Inputs','C3','Case selected');V('Inputs','D3','Base');sh.Inputs.getRange('D3').dataValidation={rule:{type:'list',values:['Bear','Base','Bull']}};V('Inputs','D4','One control in D3');
+const inputKeys=['wacc','ke','g','roic','roe','payout','pergrowth','perroe','permargin','tax','interest','h2div','h2buyback','capital','addshares','reference_price','sgaratio','h2_cash_adjustment','price_hurdle_uplift'];
+const inputRow=Object.fromEntries(inputKeys.map((k,i)=>[k,9+i]));
+sh.Inputs.getRange('C8:G8').values=[['Input','Active','Bear','Base','Bull']];
+for(let i=0;i<inputKeys.length;i++){let k=inputKeys[i],r=9+i;V('Inputs',`C${r}`,k);for(let j=0;j<3;j++){const cs=['Bear','Base','Bull'][j];let v=p.cases[cs][k]??p[k];V('Inputs',`${'EFG'[j]}${r}`,v);}F('Inputs',`D${r}`,`=IF($D$3="Bear",E${r},IF($D$3="Bull",G${r},F${r}))`);if(i<9||k==='tax'||k==='interest'||k==='sgaratio'||k==='price_hurdle_uplift')R('Inputs',`D${r}:G${r}`,'0.0%');}
+sh.Inputs.getRange('E9:G30').format.font.color=blue;
+const actKeys=['rev','op','ni','equity','nci','cash','liquid','debt','leases','nwc','da','capex','cfo','shares','nonop','group_ni'];
+const ar=Object.fromEntries(actKeys.map((k,i)=>[k,9+i]));
+sh['Actuals Sources'].getRange('C8:F8').values=[['2026H1 actual','KRW bn / shares mn','Source','Account meaning']];
+for(let i=0;i<actKeys.length;i++){const k=actKeys[i],r=9+i;V('Actuals Sources',`C${r}`,({rev:'Revenue H1',op:'Operating profit H1',ni:'Parent NI H1',equity:'Parent equity',nci:'Non-controlling interests',cash:'Cash equivalents',liquid:'Included financial assets',debt:'Borrowings / bonds',leases:'Additional lease debt',nwc:'Operating NWC',da:'D&A H1',capex:'Asset investment H1',cfo:'CFO as filed',shares:'Economic shares (million)',nonop:'Non-operating assets',group_ni:'Group NI H1'}[k]));V('Actuals Sources',`D${r}`,p.h1[k]);V('Actuals Sources',`E${r}`,['da','nonop'].includes(k)?'S02':k==='shares'?({'003230':'S07','101490':'S03','064760':'S04','005930':'S04','000660':'S03','058470':'S07'}[p.ticker]):'S01');sh['Actuals Sources'].getRange(`D${r}`).format.font.color=blue;}
+R('Actuals Sources',`D${ar.shares}`,'0.000000');V('Actuals Sources','C25','Forecast parent NI factor');F('Actuals Sources','D25',`=MIN(1,D${ar.ni}/D${ar.group_ni})`);R('Actuals Sources','D25','0.0%');
+sh['Actuals Sources'].getRange('C27:F27').values=[['Source','Publisher','Title','URL']];
+for(let i=0;i<p.sources.length;i++){const x=p.sources[i];sh['Actuals Sources'].getRange(`C${28+i}:F${28+i}`).values=[[x[0],x[2],x[1],x[3]]];}
+sh['Actuals Sources'].getRange('F28:L45').format.columnWidth=30;
+const I=k=>k==='rev26'?"'Operating Build'!$D$20":`Inputs!$D$${inputRow[k]}`,A=k=>`'Actuals Sources'!$D$${ar[k]}`;
+const series={margin:37,da:42,capex:47};
+for(let i=0;i<6;i++)V('Inputs',`${'DEFGHI'[i]}30`,2026+i);
+for(const [k,r] of Object.entries(series)){V('Inputs',`C${r}`,`${k} Active`);for(let j=0;j<3;j++){const cs=['Bear','Base','Bull'][j];V('Inputs',`C${r+1+j}`,cs);let arr=k==='growth'?[0,...p.cases[cs].growth]:p.cases[cs][k];for(let i=0;i<6;i++)V('Inputs',`${'DEFGHI'[i]}${r+1+j}`,arr[i]);}for(const col of 'DEFGHI')F('Inputs',`${col}${r}`,`=IF($D$3="Bear",${col}${r+1},IF($D$3="Bull",${col}${r+3},${col}${r+2}))`);sh.Inputs.getRange(`D${r+1}:I${r+3}`).format.font.color=blue;if(['growth','margin','nwc'].includes(k))R('Inputs',`D${r}:I${r+3}`,'0.0%');}
+// Product and working-capital build. Sources and case assumptions feed this build.
+const products=p.product_names,prodLabels=['Test socket','Leeno pin','Medical incl. related goods','Other goods'];
+for(let j=0;j<4;j++){
+ V('Actuals Sources',`C${60+j}`,`${prodLabels[j]} H1 bn`);V('Actuals Sources',`D${60+j}`,p.product_actuals[j]);V('Actuals Sources',`E${60+j}`,'S03');
+ const ir=90+j;V('Inputs',`C${ir}`,`${prodLabels[j]} H2 bn`);
+ for(let i=0;i<3;i++)V('Inputs',`${'EFG'[i]}${ir}`,p.cases[['Bear','Base','Bull'][i]].h2[j]);
+ F('Inputs',`D${ir}`,`=IF($D$3="Bear",E${ir},IF($D$3="Bull",G${ir},F${ir}))`);
+}
+V('Actuals Sources','C65','2025 actual revenue bn');V('Actuals Sources','D65',p.actual_aux.fy2025_rev);V('Actuals Sources','E65','S04');
+V('Actuals Sources','C66','H1 customer A / total sales');V('Actuals Sources','D66',p.review_inputs.customer_a_share);V('Actuals Sources','E66','S08');
+V('Actuals Sources','C67','ELS carrying value bn');V('Actuals Sources','D67',20.329235);V('Actuals Sources','E67','S02');
+V('Actuals Sources','C68','Project total budget bn');V('Actuals Sources','D68',p.actual_aux.project_budget);V('Actuals Sources','E68','S05');
+V('Actuals Sources','C69','Project cumulative spent bn');V('Actuals Sources','D69',p.actual_aux.project_spent);V('Actuals Sources','E69','S05');
+sh['Actuals Sources'].getRange('D60:D69').format.font.color=blue;
+sh.Inputs.getRange('E90:G93').format.font.color=blue;
+const pgRows=[98,103,108,113];
+for(let j=0;j<4;j++){
+ const row=pgRows[j];V('Inputs',`C${row}`,`${prodLabels[j]} growth active`);
+ for(let k=0;k<3;k++){const cs=['Bear','Base','Bull'][k];V('Inputs',`C${row+k+1}`,cs);for(let i=0;i<6;i++)V('Inputs',`${'DEFGHI'[i]}${row+k+1}`,i?p.cases[cs].pg[j][i-1]:0);}
+ for(const col of 'DEFGHI')F('Inputs',`${col}${row}`,`=IF($D$3="Bear",${col}${row+1},IF($D$3="Bull",${col}${row+3},${col}${row+2}))`);
+ sh.Inputs.getRange(`D${row}:I${row+3}`).setNumberFormat('0.0%');sh.Inputs.getRange(`D${row+1}:I${row+3}`).format.font.color=blue;
+}
+for(const [key,row] of [['dso',120],['dio',125],['dpo',130]]){
+ V('Inputs',`C${row}`,`${key.toUpperCase()} days active`);
+ for(let k=0;k<3;k++){const cs=['Bear','Base','Bull'][k];V('Inputs',`C${row+k+1}`,cs);for(let i=0;i<6;i++)V('Inputs',`${'DEFGHI'[i]}${row+k+1}`,p.cases[cs][key][i]);}
+ for(const col of 'DEFGHI')F('Inputs',`${col}${row}`,`=IF($D$3="Bear",${col}${row+1},IF($D$3="Bull",${col}${row+3},${col}${row+2}))`);
+ sh.Inputs.getRange(`D${row+1}:I${row+3}`).format.font.color=blue;
+}
+V('Inputs','C88','H2 product revenue, KRW bn');V('Inputs','C96','Product growth by year; D=2026 / I=2031');V('Inputs','C137','Sources: H1 S03; future rates are analyst conditions.');V('Inputs','C139','Growth and NWC totals are derived in Operating Build.');
+for(let i=0;i<6;i++){
+ const col='DEFGHI'[i],prev='CDEFGH'[i];V('Operating Build',`${col}7`,2026+i);
+ for(let j=0;j<4;j++){V('Operating Build',`C${8+j}`,prodLabels[j]);F('Operating Build',`${col}${8+j}`,i?`=${prev}${8+j}*(1+Inputs!${col}${pgRows[j]})`:`='Actuals Sources'!D${60+j}+Inputs!D${90+j}`);}
+ F('Operating Build',`${col}20`,`=SUM(${col}8:${col}11)`);
+ F('Operating Build',`${col}21`,i?`=${col}20/${prev}20-1`:`=${col}20/'Actuals Sources'!D65-1`);
+ F('Operating Build',`${col}24`,`=1-Inputs!${col}37-${I('sgaratio')}`);
+ F('Operating Build',`${col}25`,`=Inputs!${col}120`);F('Operating Build',`${col}26`,`=Inputs!${col}125`);F('Operating Build',`${col}27`,`=Inputs!${col}130`);
+ F('Operating Build',`${col}28`,`=${col}25/365+${col}24*(${col}26-${col}27)/365`);
+}
+for(const [row,label] of [[20,'Total revenue bn'],[21,'Revenue growth'],[24,'COGS / revenue'],[25,'DSO days'],[26,'DIO days'],[27,'DPO days'],[28,'Operating NWC / revenue']])V('Operating Build',`C${row}`,label);
+for(const row of [21,24,28])R('Operating Build',`D${row}:I${row}`,'0.0%');
+V('Operating Build','C14','H1 product table in KRW thousand; rounding gap KRW 202.');
+V('Operating Build','C16','Production EA is not external sales quantity.');
+V('Operating Build','C18','Product totals and collection days feed the common Forecast.');
+sh['Operating Build'].getRange('C7:I7').format={fill:navy,font:{name:'NanumGothic',bold:true,color:'#FFFFFF'},rowHeight:27};
+sh['Peer Data'].getRange('C8:K8').values=[['Company','2025 parent NI','2025H1 parent NI','2026H1 parent NI','Current shares mn','TTM parent NI','NI/current share','Reference price','Observed ratio']];
+for(let i=0;i<2;i++){
+ const q=p.peer_actuals[i],row=9+i;sh['Peer Data'].getRange(`C${row}:G${row}`).values=[[q.name,q.ni25,q.nih125,q.nih126,q.shares]];V('Peer Data',`J${row}`,q.price);
+ F('Peer Data',`H${row}`,`=D${row}-E${row}+F${row}`);F('Peer Data',`I${row}`,`=H${row}*1000/G${row}`);F('Peer Data',`K${row}`,`=J${row}/I${row}`);R('Peer Data',`G${row}`,'0.000000');
+ sh['Peer Data'].getRange(`D${row}:G${row}`).format.font.color=blue;sh['Peer Data'].getRange(`J${row}`).format.font.color=blue;
+}
+V('Peer Data','C13','TTM = 2025 FY - 2025 H1 + 2026 H1. Parent NI, KRW bn.');V('Peer Data','C14','Prices: 2026-10-16 Naver. Economic shares: 2026-06-30.');
+V('Peer Data','C16','Sources: Leeno S01/S04/S07/PX01; ISC P01/P02/P07/PX02.');V('Peer Data','C17','Ratio uses current shares; not filed weighted-average EPS.');V('Peer Data','C18','Observed TTM multiple; not normalized forward peer PER.');
+sh['Peer Data'].getRange('D8:K8').format.columnWidth=18;sh['Peer Data'].getRange('C8:K8').format={fill:navy,font:{name:'NanumGothic',bold:true,color:'#FFFFFF'},wrapText:true,rowHeight:44};
+// Duration changes the same normalized EPS path, not the operating forecast.
+sh.PER.getRange('C44:E44').values=[['Excess-growth years','Justified PER','KRW/share']];
+for(let j=0;j<5;j++){
+ const n=[3,5,7,10,15][j],row=45+j;V('PER',`C${row}`,n);
+ const pv=Array.from({length:n},(_,i)=>`(1+${I('pergrowth')})^${i}*(1-${I('pergrowth')}/${I('perroe')})/(1+${I('ke')})^${i+1}`).join('+');
+ F('PER',`D${row}`,`=${pv}+(1+${I('pergrowth')})^${n-1}*(1+${I('g')})*(1-${I('g')}/${I('roe')})/(${I('ke')}-${I('g')})/(1+${I('ke')})^${n}`);F('PER',`E${row}`,`=D${row}*$D$15`);
+}
+
+const bridgeRows=['netcash_h1','h2_revenue','h2_ebit','h2_nopat','h2_da','h2_capex','h2_delta_nwc','h2_fcff','h2_interest','h2_ni','h2_dividend','h2_buyback','capital','netcash_2026e','book_2026e','shares_mn'];
+bridgeRows.forEach((k,i)=>V('Cash Equity Bridge',`C${8+i}`,k));
+const bf=[`=${A('cash')}+${A('liquid')}-${A('debt')}-${A('leases')}`,`=${I('rev26')}-${A('rev')}`,`=${I('rev26')}*Inputs!D37-${A('op')}`,`=D10*(1-${I('tax')})`,`=Inputs!D42-${A('da')}`,`=Inputs!D47-${A('capex')}`,`=${I('rev26')}*'Operating Build'!D28-${A('nwc')}`,'=D11+D12-D13-D14',`=D8*${I('interest')}*0.5`,"=D11*'Actuals Sources'!D25+D16",`=${I('h2div')}`,`=${I('h2buyback')}`,`=${I('capital')}`,'=D8+D15+D16+D25-D18-D19+D20',`=${A('equity')}+D17-D18-D19+D20`,`=${A('shares')}+${I('addshares')}`];bf.forEach((f,i)=>F('Cash Equity Bridge',`D${8+i}`,f));R('Cash Equity Bridge','D23','0.000000');
+const flabels=['Revenue','Revenue growth','Operating margin','EBIT','Tax rate','NOPAT','D&A','CAPEX','NWC / annual sales','Operating NWC','Change in NWC','FCFF','Cash return','Parent net income','EPS KRW','Beginning parent book','Dividends','Ending parent book','Ending net cash','Parent allocation factor'];flabels.forEach((l,i)=>V('Forecast',`C${8+i}`,l));
+for(let i=0;i<6;i++){const col='DEFGHI'[i],prev='CDEFGH'[i];V('Forecast',`${col}7`,2026+i);F('Forecast',`${col}8`,i?`=${prev}8*(1+${col}9)`:`=${I('rev26')}`);F('Forecast',`${col}9`,`='Operating Build'!${col}21`);F('Forecast',`${col}10`,`=Inputs!${col}37`);F('Forecast',`${col}11`,`=${col}8*${col}10`);F('Forecast',`${col}12`,`=${I('tax')}`);F('Forecast',`${col}13`,`=${col}11*(1-${col}12)`);F('Forecast',`${col}14`,`=Inputs!${col}42`);F('Forecast',`${col}15`,`=Inputs!${col}47`);F('Forecast',`${col}16`,`='Operating Build'!${col}28`);F('Forecast',`${col}17`,`=${col}8*${col}16`);if(i){F('Forecast',`${col}18`,`=${col}17-${prev}17`);F('Forecast',`${col}19`,`=${col}13+${col}14-${col}15-${col}18`);}F('Forecast',`${col}20`,i?`=${prev}26*${I('interest')}`:"='Cash Equity Bridge'!D16");F('Forecast',`${col}21`,i?`=${col}13*${col}27+${col}20`:`=${A('ni')}+'Cash Equity Bridge'!D17`);F('Forecast',`${col}22`,`=${col}21*1000/'Cash Equity Bridge'!$D$23`);if(i)F('Forecast',`${col}23`,`=${prev}25`);F('Forecast',`${col}24`,i?`=${prev}21*${I('payout')}`:`=${I('h2div')}`);F('Forecast',`${col}25`,i?`=${col}23+${col}21-${col}24`:"='Cash Equity Bridge'!D22");F('Forecast',`${col}26`,i?`=${prev}26+${col}19+${col}20-${col}24`:"='Cash Equity Bridge'!D21");F('Forecast',`${col}27`,"='Actuals Sources'!D25");}
+for(const r of [9,10,12,16,27])R('Forecast',`D${r}:I${r}`,'0.0%');
+for(let i=0;i<5;i++){const col='DEFGH'[i],fc='EFGHI'[i];V('DCF',`${col}7`,2027+i);F('DCF',`${col}8`,`=Forecast!${fc}19`);V('DCF',`${col}9`,i+1);F('DCF',`${col}10`,`=1/(1+${I('wacc')})^${col}9`);F('DCF',`${col}11`,`=${col}8*${col}10`);}
+['FCFF','Years from 2026 year-end','Discount factor','PV FCFF'].forEach((l,i)=>V('DCF',`C${8+i}`,l));
+const dcl=['PV explicit FCFF','Terminal NOPAT','Terminal FCFF','Terminal EV','PV terminal EV','Operating EV','2026E net cash','Non-operating assets','NCI book proxy','Parent equity value','Shares million','DCF KRW/share','Terminal / EV'];dcl.forEach((l,i)=>V('DCF',`C${15+i}`,l));
+const dcf=[ '=SUM(D11:H11)',`=Forecast!I13*(1+${I('g')})`,`=D16*(1-${I('g')}/${I('roic')})`,`=D17/(${I('wacc')}-${I('g')})`,`=D18/(1+${I('wacc')})^5`,'=D15+D19',"='Cash Equity Bridge'!D21",`=${A('nonop')}`,`=${A('nci')}`,'=D20+D21+D22-D23',"='Cash Equity Bridge'!D23",'=D24*1000/D25','=D19/D20'];dcf.forEach((f,i)=>F('DCF',`D${15+i}`,f));R('DCF','D27','0.0%');
+const rl=['Beginning parent book','Parent NI','Cost of equity','Equity charge','Residual income','Years','PV residual income','Ending parent book'];rl.forEach((l,i)=>V('RIM',`C${8+i}`,l));
+for(let i=0;i<5;i++){const col='DEFGH'[i],fc='EFGHI'[i];V('RIM',`${col}7`,2027+i);F('RIM',`${col}8`,`=Forecast!${fc}23`);F('RIM',`${col}9`,`=Forecast!${fc}21`);F('RIM',`${col}10`,`=${I('ke')}`);F('RIM',`${col}11`,`=${col}8*${col}10`);F('RIM',`${col}12`,`=${col}9-${col}11`);V('RIM',`${col}13`,i+1);F('RIM',`${col}14`,`=${col}12/(1+${col}10)^${col}13`);F('RIM',`${col}15`,`=Forecast!${fc}25`);}R('RIM','D10:H10','0.0%');
+['2026E parent book','PV explicit RI','2032 residual income','PV terminal RI','Parent equity value','Shares million','RIM KRW/share','DDM identity difference'].forEach((l,i)=>V('RIM',`C${18+i}`,l));
+const rim=["='Cash Equity Bridge'!D22",'=SUM(D14:H14)',`=(${I('roe')}-${I('ke')})*Forecast!I25`,`=D20/(${I('ke')}-${I('g')})/(1+${I('ke')})^5`,'=D18+D19+D21',"='Cash Equity Bridge'!D23",'=D22*1000/D23',`=D22-(Forecast!E24/(1+${I('ke')})+Forecast!F24/(1+${I('ke')})^2+Forecast!G24/(1+${I('ke')})^3+Forecast!H24/(1+${I('ke')})^4+Forecast!I24/(1+${I('ke')})^5+(Forecast!I25+D20/(${I('ke')}-${I('g')}))/(1+${I('ke')})^5)`];rim.forEach((f,i)=>F('RIM',`D${18+i}`,f));R('RIM','D25','0.000000');
+const pl=['2027 revenue','Normalized operating margin','Normalized NOPAT','Parent allocation','Parent operating NI','Cash return','Normalized parent NI','Normalized EPS'];pl.forEach((l,i)=>V('PER',`C${8+i}`,l));
+const pf=['=Forecast!E8',`=${I('permargin')}`,'=D8*D9*(1-Forecast!E12)','=Forecast!E27','=D10*D11',`='Cash Equity Bridge'!D21*${I('interest')}`,'=D12+D13',"=D14*1000/'Cash Equity Bridge'!D23"];pf.forEach((f,i)=>F('PER',`D${8+i}`,f));
+['EPS growth 5 years','Incremental ROE','Growth phase payout','Stable growth','Stable ROE','Cost of equity','Stable payout','Terminal forward PE'].forEach((l,i)=>V('PER',`C${18+i}`,l));const pff=[`=${I('pergrowth')}`,`=${I('perroe')}`,'=1-D18/D19',`=${I('g')}`,`=${I('roe')}`,`=${I('ke')}`,'=1-D21/D22','=D24/(D23-D21)'];pff.forEach((f,i)=>F('PER',`D${18+i}`,f));R('PER','D9','0.0%');R('PER','D18:D24','0.0%');
+['EPS / EPS_2027','Payout','Discount factor','PV payout / EPS_2027'].forEach((l,i)=>V('PER',`C${30+i}`,l));
+for(let i=0;i<5;i++){const col='DEFGH'[i];V('PER',`${col}29`,2027+i);F('PER',`${col}30`,`=(1+$D$18)^${i}`);F('PER',`${col}31`,'=$D$20');F('PER',`${col}32`,`=1/(1+$D$23)^${i+1}`);F('PER',`${col}33`,`=${col}30*${col}31*${col}32`);}
+['PV payout / EPS_2027','PV terminal / EPS_2027','Justified forward PER','PER KRW/share'].forEach((l,i)=>V('PER',`C${36+i}`,l));F('PER','D36','=SUM(D33:H33)');F('PER','D37','=H30*(1+D21)*D25/(1+D23)^5');F('PER','D38','=D36+D37');F('PER','D39','=D15*D38');
+sh.Summary.getRange('C7:E7').values=[['Method','KRW / share','Role']];V('Summary','C8','DCF');F('Summary','D8','=DCF!D26');V('Summary','E8','2026 year-end scenario');V('Summary','C9','Normalized PER');F('Summary','D9','=PER!D39');V('Summary','E9','Fundamental multiple');V('Summary','C10','RIM');F('Summary','D10','=RIM!D24');V('Summary','E10','Excess return duration');R('Summary','D8:D10','#,##0');sh.Summary.getRange('D8:D10').format.font={size:14,bold:true,color:dark};
+V('Summary','C13','Valuation date');V('Summary','D13','2026-12-31E');V('Summary','C14','Financial statements');V('Summary','D14','2026-06-30A');V('Summary','C15','Report version');V('Summary','D15','2026-10-19 v1');V('Summary','C16','Reference price date');V('Summary','D16','2026-10-16 NAVER');V('Summary','C17','Reference close KRW');F('Summary','D17',`=${I('reference_price')}`);V('Summary','C18','DCF / reference close - 1');F('Summary','D18','=D8/D17-1');R('Summary','D18','0.0%');V('Summary','C19','RIM / DDM difference');F('Summary','D19','=RIM!D25');V('Summary','C21','All forecast inputs are editable in Inputs.');V('Summary','C23','KRW bn. Share count is in millions.');V('Summary','C25','Naver reference price; exchange close not reconciled.');
+for(const [n,ranges] of Object.entries({'Inputs':['C8:G8','C30:I30'],'Actuals Sources':['C8:F8','C27:F27'],'Forecast':['C7:I7'],'DCF':['C7:H7'],'RIM':['C7:H7'],'PER':['C29:H29'],'Summary':['C7:E7']})){for(const r of ranges)sh[n].getRange(r).format={fill:navy,font:{name:'NanumGothic',size:10,bold:true,color:'#FFFFFF'},rowHeight:27,wrapText:true};}
+// Assumption review inputs. Shared stresses do not select new Base forecasts.
+const reviewInputRows={};let reviewRow=60;
+V('Inputs','C58','Review inputs / conditional stresses');
+for(const [k,val] of Object.entries(p.review_inputs)){
+ if(Array.isArray(val)){for(let i=0;i<val.length;i++){const key=`${k}_${i}`;reviewInputRows[key]=reviewRow;V('Inputs',`C${reviewRow}`,key);V('Inputs',`D${reviewRow}`,val[i]);R('Inputs',`D${reviewRow}`,'0.0%');reviewRow++;}}
+ else{reviewInputRows[k]=reviewRow;V('Inputs',`C${reviewRow}`,k);V('Inputs',`D${reviewRow}`,val);if(['margin_drop','extra_capex','overseas_share_proxy','asset_haircut'].includes(k))R('Inputs',`D${reviewRow}`,'0.0%');reviewRow++;}
+}
+sh.Inputs.getRange(`D60:D${reviewRow-1}`).format.font.color=blue;
+V('Inputs',`C${reviewRow+1}`,'Source: research_inputs.json; evidence in report section 06.');
+const X=k=>`Inputs!$D$${reviewInputRows[k]}`;
+const reviewExpected=JSON.parse(await fs.readFile(path.join(root,'model/valuation_review.json'),'utf8'));
+const dr={terminal_reinvestment_2031:8,terminal_reinvestment_2032:9,fcff_step_2032:10,roe_2031:11,roe_2032:12,cash_proxy_2031:13,cash_book_share:14,cash_split_terminal_roe:16,rim_no_terminal_ri_price:17,rim_cash_split_price:18,dcf_no_excess_roic_price:19,dcf_excess_roic_value:20,required_terminal_fcff:21,required_terminal_margin:22,required_per_normal_margin:23,dcf_margin_stress_price:27,dcf_capex_stress_price:28,explicit_value_per_share:30,terminal_value_per_share:31,netcash_per_share:32,nonop_less_nci_per_share:33,per_terminal_share:34};
+const dlabels={8:'2031 reinvestment / NOPAT',9:'2032 reinvestment / NOPAT',10:'FCFF 2032 / 2031 - 1',11:'2031 parent ROE',12:'2032 assumed parent ROE',13:'2031 net cash proxy capped at book',14:'Cash proxy / parent book',15:'Cash split: terminal NI',16:'Cash split: terminal ROE',17:'RIM: no terminal excess ROE',18:'RIM: cash split stress',19:'DCF: terminal ROIC = WACC',20:'DCF: excess ROIC value / share',21:'Price hurdle: terminal FCFF bn',22:'Price hurdle: terminal OP margin',23:'Price hurdle: PER normal margin',24:'Margin reduction (percentage pts)',25:'Additional explicit CAPEX',27:'DCF: margin reduction stress',28:'DCF: additional CAPEX stress',30:'DCF: explicit FCFF / share',31:'DCF: terminal value / share',32:'DCF: net cash / share',33:'DCF: nonop less NCI / share',34:'PER: terminal PV / total value'};
+for(const [row,label] of Object.entries(dlabels))V('Diagnostics',`C${row}`,label);
+const diag={8:'=(Forecast!I15-Forecast!I14+Forecast!I18)/Forecast!I13',9:`=${I('g')}/${I('roic')}`,10:'=DCF!D17/Forecast!I19-1',11:'=RIM!H9/RIM!H8',12:`=${I('roe')}`,13:'=MIN(MAX(Forecast!I26,0),Forecast!I25)',14:'=D13/Forecast!I25',15:`=(Forecast!I25-D13)*${I('roe')}+D13*${I('interest')}`,16:'=D15/Forecast!I25',17:"=(RIM!D18+RIM!D19)*1000/'Cash Equity Bridge'!D23",18:`=(RIM!D18+RIM!D19+(D15-${I('ke')}*Forecast!I25)/(${I('ke')}-${I('g')})/(1+${I('ke')})^5)*1000/'Cash Equity Bridge'!D23`,19:`=(DCF!D15+DCF!D16/${I('wacc')}/(1+${I('wacc')})^5+DCF!D21+DCF!D22-DCF!D23)*1000/DCF!D25`,20:'=DCF!D26-D19',21:`=(${I('reference_price')}*DCF!D25/1000-DCF!D21-DCF!D22+DCF!D23-DCF!D15)*(1+${I('wacc')})^5*(${I('wacc')}-${I('g')})`,22:`=D21/(Forecast!I8*(1+${I('g')})*(1-${I('tax')})*(1-${I('g')}/${I('roic')}))`,23:`=(${I('reference_price')}/PER!D38*DCF!D25/1000-DCF!D21*${I('interest')})/(Forecast!E8*(1-${I('tax')})*Forecast!E27)`,24:`=${X('margin_drop')}`,25:`=${X('extra_capex')}`,27:`=DCF!D26-(${[...('EFGHI')].map((cl,i)=>`Forecast!${cl}8/(1+${I('wacc')})^${i+1}`).join('+')}+Forecast!I8*(1+${I('g')})*(1-${I('g')}/${I('roic')})/(${I('wacc')}-${I('g')})/(1+${I('wacc')})^5)*D24*(1-${I('tax')})*1000/DCF!D25`,28:`=DCF!D26-(${[...('EFGHI')].map((cl,i)=>`Forecast!${cl}15/(1+${I('wacc')})^${i+1}`).join('+')})*D25*1000/DCF!D25`,30:'=DCF!D15*1000/DCF!D25',31:'=DCF!D19*1000/DCF!D25',32:'=DCF!D21*1000/DCF!D25',33:'=(DCF!D22-DCF!D23)*1000/DCF!D25',34:'=PER!D37/PER!D38'};
+for(const [r,formula] of Object.entries(diag))F('Diagnostics',`D${r}`,formula);
+for(const row of [8,9,10,11,12,14,16,22,23,24,25,34])R('Diagnostics',`D${row}`,'0.0%');
+V('Diagnostics','F8','Conditional stresses; main Base inputs remain selected.');V('Diagnostics','F10','2032 investment transition can change FCFF discontinuously.');V('Diagnostics','F13','Net cash proxy is not an audited operating-equity split.');V('Diagnostics','F17','No excess ROE after the explicit forecast.');V('Diagnostics','F18','Cash yield separated from residual-book ROE.');V('Diagnostics','F21','Reference price held unchanged at 2026 year-end.');V('Diagnostics','F23','Theoretical PER is fixed; not empirical peer PER.');V('Diagnostics','F28','No benefit to earnings, D&A or terminal from extra CAPEX.');V('Diagnostics','C37','PER and RIM share DDM assumptions; not independent market evidence.');
+const specialRows={};let nextSpecial=8;
+function special(key,label,formula){specialRows[key]=nextSpecial;V('Special Cases',`C${nextSpecial}`,label);F('Special Cases',`D${nextSpecial}`,formula);nextSpecial++;}
+if(p.ticker==='003230'){
+ special('overseas_growth_if_domestic_flat','Overseas growth: domestic flat',`=Inputs!E32/${X('overseas_share_proxy')}`);R('Special Cases','D8','0.0%');
+ V('Special Cases','F8','H1 overseas share proxy. Total growth / overseas share.');
+}else if(p.ticker==='101490'){
+ special('eb_exchange_dcf_price','DCF: remaining EB exchanged',`=(DCF!D24+${X('eb_carrying_amount')})*1000/(DCF!D25+${X('eb_exchange_shares_mn')})`);
+ special('euv_required_annual_fcff','EUV hurdle: added FCFF in 2032',`=MAX(${I('reference_price')}*DCF!D25/1000-DCF!D24,0)*(1+${I('wacc')})^5*(${I('wacc')}-${I('g')})`);
+ special('euv_required_revenue_at_20pct','EUV hurdle: revenue at 20% FCF',`=D9/${X('euv_fcf_margins_0')}`);
+ special('euv_required_revenue_at_30pct','EUV hurdle: revenue at 30% FCF',`=D9/${X('euv_fcf_margins_1')}`);
+ V('Special Cases','F8','Debt release and economic share count change together.');V('Special Cases','F9','Added FCFF begins in 2032; earlier contributions = 0.');V('Special Cases','F10','Illustrative FCF margins, not observed EUV economics.');
+}else if(p.ticker==='064760'){
+ special('fee_saving_margin_2027','Fee savings / 2027 revenue',`=${X('fee_saving_2027')}/Forecast!E8`);R('Special Cases','D8','0.0%');
+ special('fee_delayed_dcf_price','DCF: fee saving delayed one year',`=DCF!D26-${X('fee_saving_2027')}*(1-${I('tax')})/(1+${I('wacc')})*1000/DCF!D25`);
+ V('Special Cases','F8','6bn savings already included in the Base margin.');V('Special Cases','F9','2027 saving lost; 2028 onward path held fixed.');
+}else if(p.ticker==='005930'){
+ special('hypothetical_buyback_shares_mn','Hypothetical shares removed, mn',`=${X('hypothetical_buyback')}*1000/${I('reference_price')}`);
+ special('post_buyback_dcf_price','DCF: incremental year-end buyback',`=(DCF!D24-${X('hypothetical_buyback')})*1000/(DCF!D25-D8)`);
+ V('Special Cases','F8','Assumed 20,000bn at the reference price; not executed actuals.');V('Special Cases','F9','Cash and shares decrease together; equal economic rights proxy.');
+}else if(p.ticker==='000660'){
+ special('financial_asset_haircut_bn','Financial asset value reduction bn',`=(${X('volatile_short_assets')}+${A('nonop')})*${X('asset_haircut')}`);
+ special('financial_asset_stress_dcf_price','DCF: financial asset haircut','=(DCF!D24-D8)*1000/DCF!D25');
+ special('adr_fx_100_price_effect','DCF/share effect: ADR FX +/-100',`=${X('adr_usd_bn')}*${X('adr_fx_shock')}*1000/DCF!D25`);
+ V('Special Cases','F8','20% stress on selected assets; not an assumed tax rate.');V('Special Cases','F10','Financing translation only. Operations and share count fixed.');
+}
+V('Special Cases','C16','All special cases are local sensitivities, not company guidance.');
+V('Special Cases','C18','Units: KRW bn / shares mn / prices KRW. See report section 11.');
+for(let row=8;row<=11;row++){const note=sh['Special Cases'].getRange(`F${row}`).values[0][0];V('Special Cases',`J${row}`,note??'');V('Special Cases',`F${row}`,'');}
+for(const n of ['Diagnostics','Special Cases']){
+ sh[n].getRange('C1:C145').format.columnWidth=43;sh[n].getRange('D1:D85').format.columnWidth=20;sh[n].getRange('F1:F85').format.columnWidth=65;sh[n].getRange('F8:F34').format.wrapText=true;sh[n].getRange('C8:F34').format.rowHeight=29;sh[n].getRange('C7:D7').values=[['Economic assumption review','Active case']];sh[n].getRange('C7:D7').format={fill:navy,font:{name:'NanumGothic',bold:true,color:'#FFFFFF'}};
+}
+if(p.ticker==='058470'){
+ special('dso_15day_liquidity','DSO +15 days: 2027 cash need bn',`=Forecast!E8*${X('collection_delay_days')}/365`);
+ special('customer_one_year_dcf','DCF: customer A 10% shock in 2027',`=DCF!D26-Forecast!E8*${X('customer_a_share')}*${X('customer_shock')}*${X('contribution_margin')}*(1-${I('tax')})/(1+${I('wacc')})*1000/DCF!D25`);
+ special('ignored_accrual_dcf','DCF: omitted H2 accrual settlement',`=DCF!D26-${I('h2_cash_adjustment')}*1000/DCF!D25`);
+ special('els_haircut_dcf','DCF: ELS value minus 20%',`=DCF!D26-'Actuals Sources'!D67*0.2*1000/DCF!D25`);
+ V('Special Cases','F8','Liquidity required, not a permanent valuation loss.');V('Special Cases','F9','One-year shock; 50% contribution margin is an assumption.');V('Special Cases','F10','Base cash bridge includes settlement of H1 accrued expense.');V('Special Cases','F11','Local asset value sensitivity; no additional tax haircut.');
+}
+V('Cash Equity Bridge','C25','H2 accrued-expense cash adjustment');F('Cash Equity Bridge','D25',`=${I('h2_cash_adjustment')}`);
+// Reverse DCF: the uplift is solved in Python and exposed as an editable parameter.
+V('Special Cases','C22','Reverse DCF with investment ratios held fixed');
+for(let i=0;i<5;i++){
+ const col='DEFGH'[i],fc='EFGHI'[i],prev='CDEFG'[i];V('Special Cases',`${col}24`,2027+i);
+ F('Special Cases',`${col}25`,`=(1+${I('price_hurdle_uplift')})^${i+1}`);
+ for(const [row,fr] of [[26,8],[27,13],[28,14],[29,15],[30,17]])F('Special Cases',`${col}${row}`,`=Forecast!${fc}${fr}*${col}25`);
+ F('Special Cases',`${col}31`,i?`=${col}30-${prev}30`:`=${col}30-Forecast!D17`);
+ F('Special Cases',`${col}32`,`=${col}27+${col}28-${col}29-${col}31`);
+ F('Special Cases',`${col}33`,`=${col}32/(1+${I('wacc')})^${i+1}`);
+}
+for(const [row,label] of [[25,'Revenue path scale'],[26,'Revenue bn'],[27,'NOPAT bn'],[28,'D&A bn'],[29,'CAPEX bn'],[30,'Operating NWC bn'],[31,'Change in NWC bn'],[32,'FCFF bn'],[33,'PV FCFF bn'],[35,'Terminal NOPAT bn'],[36,'Terminal FCFF bn'],[37,'PV terminal EV bn'],[38,'Parent equity value bn'],[39,'Reverse DCF KRW/share'],[40,'Required 2027 revenue growth'],[41,'Annual growth-factor uplift']])V('Special Cases',`C${row}`,label);
+F('Special Cases','D35',`=H27*(1+${I('g')})`);F('Special Cases','D36',`=D35*(1-${I('g')}/${I('roic')})`);F('Special Cases','D37',`=D36/(${I('wacc')}-${I('g')})/(1+${I('wacc')})^5`);F('Special Cases','D38','=SUM(D33:H33)+D37+DCF!D21+DCF!D22-DCF!D23');F('Special Cases','D39','=D38*1000/DCF!D25');F('Special Cases','D40','=D26/Forecast!D8-1');F('Special Cases','D41',`=${I('price_hurdle_uplift')}`);R('Special Cases','D40:D41','0.0%');
+V('Special Cases','C44','2031 operating-capital proxy bn');F('Special Cases','D44',`=Forecast!I25-Forecast!I26-${A('nonop')}`);V('Special Cases','C45','DCF: existing assets ROIC = WACC');F('Special Cases','D45',`=(DCF!D15+D44/(1+${I('wacc')})^5+DCF!D21+DCF!D22-DCF!D23)*1000/DCF!D25`);specialRows.operating_capital_2031=44;specialRows.all_assets_no_excess_dcf=45;
+specialRows.price_hurdle_dcf=39;specialRows.price_hurdle_2027_growth=40;specialRows.price_hurdle_uplift=41;
+sh['Special Cases'].getRange('D24:H24').format={fill:navy,font:{name:'NanumGothic',bold:true,color:'#FFFFFF'}};
+sh['Special Cases'].getRange('E24:H41').setNumberFormat(nf);
+
+const extraModelChecks=[];
+
+for(let row=8;row<=11;row++){const note=sh['Special Cases'].getRange(`F${row}`).values[0][0];if(note){V('Special Cases',`J${row}`,note);V('Special Cases',`F${row}`,'');}}
+sh['Special Cases'].getRange('J1:J145').format.columnWidth=60;sh['Special Cases'].getRange('J8:J11').format.rowHeight=42;R('Special Cases','D24:H24','0');
+sh['Special Cases'].getRange('F1:H145').format.columnWidth=17;sh['Special Cases'].getRange('J8:J18').format.wrapText=true;
+const diagnosticChecks=[];
+
+R('Peer Data','J9:J10','#,##0');R('Peer Data','K9:K10','0.00');
+const check=[];
+for(const cs of ['Bear','Base','Bull']){V('Inputs','D3',cs);wb.recalculate();for(const [key,row] of Object.entries(dr)){const actual=sh.Diagnostics.getRange(`D${row}`).values[0][0];const target=reviewExpected[cs][key];if(typeof actual!=='number'||Math.abs(actual-target)>Math.max(0.05,Math.abs(target)*1e-9))throw Error(`${p.name} diagnostic ${cs} ${key}: ${actual} != ${target}`);diagnosticChecks.push({case:cs,metric:key,excel:actual,python:target});}for(const [key,row] of Object.entries(specialRows)){const actual=sh['Special Cases'].getRange(`D${row}`).values[0][0];const target=reviewExpected[cs][key];if(typeof actual!=='number'||Math.abs(actual-target)>Math.max(0.05,Math.abs(target)*1e-9))throw Error(`${p.name} special ${cs} ${key}: ${actual} != ${target}`);diagnosticChecks.push({case:cs,metric:key,excel:actual,python:target});}for(let i=0;i<6;i++){const col='DEFGHI'[i];const rev=sh['Operating Build'].getRange(`${col}20`).values[0][0];const nwc=sh['Operating Build'].getRange(`${col}28`).values[0][0];if(Math.abs(rev-expected[cs].forecast[i].revenue)>0.000001||Math.abs(nwc-p.cases[cs].nwc[i])>1e-10)throw Error(`Operating build mismatch ${cs} ${i}`);extraModelChecks.push({case:cs,year:2026+i,revenue:rev,nwc_ratio:nwc});}for(let j=0;j<5;j++){const actual=sh.PER.getRange(`E${45+j}`).values[0][0];const target=companyDetail[cs].duration_prices[j].price;if(Math.abs(actual-target)>0.05)throw Error(`Duration mismatch ${cs} ${j}`);}for(const [cell,key] of [['D8','dcf_price'],['D9','per_price'],['D10','rim_price']]){const actual=sh.Summary.getRange(cell).values[0][0];if(typeof actual!=='number'||Math.abs(actual-expected[cs][key])>0.05)throw Error(`${p.name} ${cs} ${key}: ${actual} != ${expected[cs][key]}`);check.push({case:cs,metric:key,excel:actual,python:expected[cs][key]});}}
+V('Inputs','D3','Base');wb.recalculate();
+const boundaryChecks=[];
+for(const [key,row] of [['margin_drop',27],['extra_capex',28]]){const cell=`D${reviewInputRows[key]}`;const saved=sh.Inputs.getRange(cell).values[0][0];V('Inputs',cell,0);wb.recalculate();const stressed=sh.Diagnostics.getRange(`D${row}`).values[0][0],base=sh.DCF.getRange('D26').values[0][0];if(Math.abs(stressed-base)>0.05)throw Error(`Zero ${key} did not restore DCF`);boundaryChecks.push({input:key,test:'zero stress equals selected DCF',difference:stressed-base});V('Inputs',cell,saved);}
+wb.recalculate();
+for(let j=0;j<2;j++){const q=p.peer_actuals[j],ni=q.ni25-q.nih125+q.nih126,pe=q.price/(ni*1000/q.shares);const got=sh['Peer Data'].getRange(`K${9+j}`).values[0][0];if(Math.abs(got-pe)>1e-10)throw Error('Peer ratio mismatch');}
+const lastCell='I99',savedLast=sh.Inputs.getRange(lastCell).values[0][0],baseI=sh.Forecast.getRange('I8').values[0][0];
+// Base selector uses row100. Mutate the Base 2031 socket growth and restore it.
+const savedGrowth=sh.Inputs.getRange('I100').values[0][0];V('Inputs','I100',savedGrowth+0.01);wb.recalculate();if(sh.Forecast.getRange('I8').values[0][0]<=baseI)throw Error('Later-year growth did not flow into Forecast');V('Inputs','I100',savedGrowth);wb.recalculate();
+const baseValue=sh.DCF.getRange('D26').values[0][0],savedBear=sh.Inputs.getRange('E90').values[0][0];V('Inputs','E90',null);wb.recalculate();if(Math.abs(sh.DCF.getRange('D26').values[0][0]-baseValue)>0.05)throw Error('Unselected blank changed Base');V('Inputs','D3','Bear');wb.recalculate();if(sh.Inputs.getRange('D90').values[0][0]!=='MISSING')throw Error('Selected missing product input was hidden');V('Inputs','E90',savedBear);V('Inputs','D3','Base');wb.recalculate();boundaryChecks.push({test:'unselected blank leaves Base unchanged; selected blank exposes MISSING',passed:true});
+const inspected=await wb.inspect({kind:'table',range:'Diagnostics!C17:D23',include:'values,formulas',tableMaxRows:7,tableMaxCols:2});
+console.log(inspected.ndjson.slice(0,900));
+const errors=await wb.inspect({kind:'match',searchTerm:'#REF!|#DIV/0!|#VALUE!|#NAME\\?|#N/A|#NUM!|#NULL!',options:{useRegex:true,maxResults:30},maxChars:1500});if(!errors.ndjson.includes('matched 0 entries'))throw Error(errors.ndjson);
+await fs.mkdir(path.join(root,'outputs/previews'),{recursive:true});
+for(const name of names){const range=name==='Diagnostics'?'C2:F37':name==='Special Cases'?'C2:H45':name==='Operating Build'?'C2:I28':name==='Peer Data'?'C2:K18':name==='Inputs'?'C2:I141':name==='Actuals Sources'?'C2:F25':name==='PER'?'C2:I50':name==='Forecast'?'C2:I27':name==='DCF'?'C2:I27':name==='RIM'?'C2:I25':name==='Cash Equity Bridge'?'C2:F25':'C2:H25';const img=await wb.render({sheetName:name,range,scale:1,format:'png'});await fs.writeFile(path.join(root,'outputs/previews',name.replaceAll(' ','_')+'.png'),new Uint8Array(await img.arrayBuffer()));}
+const out=await SpreadsheetFile.exportXlsx(wb);await out.save(path.join(root,'model/Equity_Research_Model.xlsx'));
+await fs.writeFile(path.join(root,'model/model_validation.json'),JSON.stringify({company:p.name,version:'2026-10-19',model_version:p.model_version,scenario_checks:check,boundary_checks:boundaryChecks,operating_build_checks:extraModelChecks,duration_checks:15,peer_checks:2,formula_errors:0,diagnostic_checks:diagnosticChecks,rim_ddm_error:sh.RIM.getRange('D25').values[0][0]},null,2));
+console.log(p.name,'verified all 3 scenarios, exported workbook');

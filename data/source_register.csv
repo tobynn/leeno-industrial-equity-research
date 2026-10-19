@@ -1,0 +1,26 @@
+﻿source_id,title,publisher,url,accessed,use
+S01,2026 반기 별도 재무제표,DART / 2026-08-14,https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814000445&dcmNo=11527283&eleId=21&offset=272052&length=94997&dtd=dart4.xsd,2026-10-19,손익·현금·자본·현금흐름
+S02,2026 반기 별도 주석,DART / 2026-08-14,https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814000445&dcmNo=11527283&eleId=26&offset=367053&length=999375&dtd=dart4.xsd,2026-10-19,금융자산·비용·투자·세금·미지급비용
+S03,주요 제품 및 서비스,DART / 2026-08-14,https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814000445&dcmNo=11527283&eleId=11&offset=121311&length=8405&dtd=dart4.xsd,2026-10-19,제품별 실제 매출·가격 설명
+S04,2025 사업보고서,DART/KIND / 2026-03-18,https://kind.krx.co.kr/external/2026/03/18/000195/20260318000896/11011.htm,2026-10-19,2023~25 손익·배당·주식분할
+S05,원재료 및 생산설비,DART / 2026-08-14,https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814000445&dcmNo=11527283&eleId=12&offset=129720&length=23495&dtd=dart4.xsd,2026-10-19,공장 계획·기지출·토지·생산량
+S06,매출 및 수주상황,DART / 2026-08-14,https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814000445&dcmNo=11527283&eleId=13&offset=153219&length=14538&dtd=dart4.xsd,2026-10-19,수출·내수·매출경로
+S07,주식의 총수,DART / 2026-08-14,https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814000445&dcmNo=11527283&eleId=7&offset=56951&length=51718&dtd=dart4.xsd,2026-10-19,발행·자기주식·경제적 주식수
+S08,주요 고객과 부문 보고,DART / 2026-08-14,https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814000445&dcmNo=11527283&eleId=61&offset=1352129&length=14329&dtd=dart4.xsd,2026-10-19,"고객은 익명; A 23.82%, 상위3 55.85%"
+S09,배당에 관한 사항,DART / 2026-08-14,https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814000445&dcmNo=11527283&eleId=62&offset=1366458&length=20300&dtd=dart4.xsd,2026-10-19,결산배당·실제 배당성향·지급 시기
+S10,주요 계약 및 연구개발,DART / 2026-08-14,https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814000445&dcmNo=11527283&eleId=15&offset=185281&length=49564&dtd=dart4.xsd,2026-10-19,연구 항목은 매출 확정 아님
+S11,기업가치 제고 계획,DART/KRX / 2026-03-26,https://dart.fss.or.kr/report/viewer.do?rcpNo=20260326900771&dcmNo=11181210&eleId=0&offset=0&length=0&dtd=HTML,2026-10-19,DPS 800원 이상·성향 30% 이상 목표; 실제 최근 약40%와 구분
+P01,ISC 2025 사업보고서,DART/KIND / 2026-03-18,https://kind.krx.co.kr/external/2026/03/18/000082/20260318000201/11011.htm,2026-10-19,제품군·2025 지배 순이익
+P02,ISC 2026H1 연결 재무제표,DART / 2026-08-14,https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814000114&dcmNo=11526636&eleId=19&offset=169619&length=170841&dtd=dart4.xsd,2026-10-19,H125·H126 지배 순이익·계속영업 범위
+P03,ISC 2Q26 공식 IR,ISC / 2026-07~08,https://kind.krx.co.kr/external/dst/irReference/18946/2Q%202026%20%EC%8B%A4%EC%A0%81%EB%B0%9C%ED%91%9C_KOR.pdf,2026-10-19,요약과 부록 NI·EPS 차이; 공시로 대사
+P04,Cohu 실적·사업 자료,Cohu / 2026-07-30,https://ir.cohu.com/news-events/press-releases,2026-10-19,장비·반복 서비스 포함 범위 확인
+P05,Yamaichi 테스트 솔루션,Yamaichi / 확인 2026-10-19,https://www.yamaichi.co.jp/en/core/testsolution/,2026-10-19,접촉 기술과 미세가공 비교
+P06,Yamaichi IR,Yamaichi / 확인 2026-10-19,https://www.yamaichi.co.jp/en/ir/,2026-10-19,3월 결산·Test/Connector 범위 구분
+P07,ISC H1 주식의 총수,DART / 2026-08-14,https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814000114&dcmNo=11526636&eleId=7&offset=29971&length=9347&dtd=dart4.xsd,2026-10-19,"EB 교환 후 경제적 주식수 21,142,451"
+P08,ISC 2026-09-28 타법인 취득결정,DART/KRX / 2026-09-28,https://dart.fss.or.kr/report/viewer.do?rcpNo=20260928900382&dcmNo=11592309&eleId=0&offset=0&length=0&dtd=HTML,2026-10-19,기존100% 베트남 자회사 증자29.744; 신규 외부기업 인수 아님
+R01,생산 차질 관련 증권사 보도,한국경제 / 2026-08-18,https://www.hankyung.com/article/2026081858766,2026-10-19,보조 자료; 회사 확정 손실·가동률로 사용하지 않음
+M01,성장·ROE·배당과 PER,NYU Stern / 확인 2026-10-19,https://pages.stern.nyu.edu/~adamodar/New_Home_Page/invfables/peratio.htm,2026-10-19,이론 PER의 변수 관계
+M02,성숙기 재투자와 초과수익,NYU Stern / 확인 2026-10-19,https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/termvalueexreturns.htm,2026-10-19,g/ROIC 재투자와 terminal
+PX01,2026-10-16 일별 참고가격,NAVER / 확인 2026-10-19,https://api.finance.naver.com/siseJson.naver?symbol=058470&requestType=1&startTime=20261016&endTime=20261016&timeframe=day,2026-10-19,"종가 70,900; 거래소 공식값 미대사"
+PX02,ISC 같은 날짜 참고가격,NAVER / 확인 2026-10-19,https://api.finance.naver.com/siseJson.naver?symbol=095340&requestType=1&startTime=20261016&endTime=20261016&timeframe=day,2026-10-19,"160,000; 같은 공급사·날짜"
+S12,2026-08-25 IR 개최 공시,DART/KRX / 2026-08-21,https://dart.fss.or.kr/report/viewer.do?rcpNo=20260821900135&dcmNo=11544786&eleId=0&offset=0&length=0&dtd=HTML,2026-10-19,사업 설명 및 Q&A 목적; 공시 본문에 수치 예산 없음

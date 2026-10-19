@@ -1,0 +1,54 @@
+{
+  "model_version": "2026-10-19/research-v1",
+  "accounting_anchors_verified": 14,
+  "period_and_dividend_lag_verified": true,
+  "rim_ddm_identity_verified": true,
+  "reverse_price_reconstruction_tolerance_krw": 1e-06,
+  "common_section_count": 14,
+  "workbook_sheets": [
+    "Summary",
+    "Inputs",
+    "Operating Build",
+    "Forecast",
+    "Cash Equity Bridge",
+    "DCF",
+    "RIM",
+    "PER",
+    "Diagnostics",
+    "Special Cases",
+    "Peer Data",
+    "Actuals Sources"
+  ],
+  "formula_errors": 0,
+  "excel_python_main_checks": 9,
+  "excel_python_diagnostic_checks": 93,
+  "operating_build_checks": 18,
+  "duration_checks": 15,
+  "observed_peer_checks": 2,
+  "boundary_checks": [
+    {
+      "input": "margin_drop",
+      "test": "zero stress equals selected DCF",
+      "difference": 0
+    },
+    {
+      "input": "extra_capex",
+      "test": "zero stress equals selected DCF",
+      "difference": 0
+    },
+    {
+      "test": "unselected blank leaves Base unchanged; selected blank exposes MISSING",
+      "passed": true
+    }
+  ],
+  "source_limitations": [
+    "Customer-specific units and ASP not public",
+    "Same-date market CAPM not fully calibrated",
+    "Observed TTM peer is one company; normalized forward peer set not estimated",
+    "Reference prices not reconciled to exchange-certified close",
+    "Operating capital is a book-value proxy, not a full account-level separation"
+  ],
+  "pdf_pages": 22,
+  "pdf_visual_review": "All 22 final pages reviewed",
+  "workbook_visual_review": "All 12 worksheets reviewed; Operating Build, Peer Data and Special Cases inspected in detail"
+}

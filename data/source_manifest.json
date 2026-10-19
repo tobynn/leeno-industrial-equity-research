@@ -1,0 +1,128 @@
+[
+  {
+    "file": "isc_acquisition",
+    "url": "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260928900382&dcmNo=11592309&eleId=0&offset=0&length=0&dtd=HTML",
+    "sha256": "e313d6694a34b2857add1b46c06a2b15a4c6243365be2081080677e36ac2cfd5",
+    "bytes": 25071,
+    "accessed": "2026-10-19 Europe/Berlin"
+  },
+  {
+    "file": "isc_h1_18",
+    "url": "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814000114&dcmNo=11526636&eleId=18&offset=144784&length=24593&dtd=dart4.xsd&title=1.+%EC%9A%94%EC%95%BD%EC%9E%AC%EB%AC%B4%EC%A0%95%EB%B3%B4",
+    "sha256": "36aa263d5733124839b48f07596079c5c296f13b75b6b440bbe8237a5da8e9c3",
+    "bytes": 25625,
+    "accessed": "2026-10-19 Europe/Berlin"
+  },
+  {
+    "file": "isc_h1_19",
+    "url": "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814000114&dcmNo=11526636&eleId=19&offset=169619&length=170841&dtd=dart4.xsd&title=2.+%EC%97%B0%EA%B2%B0%EC%9E%AC%EB%AC%B4%EC%A0%9C%ED%91%9C",
+    "sha256": "d16a5c386f81d016be0444c12d55c0b8bb5e37fba415b36aeb531cd815b08855",
+    "bytes": 47228,
+    "accessed": "2026-10-19 Europe/Berlin"
+  },
+  {
+    "file": "isc_h1_7",
+    "url": "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814000114&dcmNo=11526636&eleId=7&offset=29971&length=9347&dtd=dart4.xsd&title=4.+%EC%A3%BC%EC%8B%9D%EC%9D%98+%EC%B4%9D%EC%88%98+%EB%93%B1",
+    "sha256": "2b97cd9b550898a8e63aa9daccd161ce97ebe0e581abd23ef7e87496afb198e2",
+    "bytes": 5740,
+    "accessed": "2026-10-19 Europe/Berlin"
+  },
+  {
+    "file": "leeno_h1_11",
+    "url": "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814000445&dcmNo=11527283&eleId=11&offset=121311&length=8405&dtd=dart4.xsd&title=2.+%EC%A3%BC%EC%9A%94+%EC%A0%9C%ED%92%88+%EB%B0%8F+%EC%84%9C%EB%B9%84%EC%8A%A4",
+    "sha256": "5b4183cab35a4f4f573bc8cf1232f6ef7c3bcbf6a774b953f8efce138ccd793c",
+    "bytes": 7540,
+    "accessed": "2026-10-19 Europe/Berlin"
+  },
+  {
+    "file": "leeno_h1_12",
+    "url": "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814000445&dcmNo=11527283&eleId=12&offset=129720&length=23495&dtd=dart4.xsd&title=3.+%EC%9B%90%EC%9E%AC%EB%A3%8C+%EB%B0%8F+%EC%83%9D%EC%82%B0%EC%84%A4%EB%B9%84",
+    "sha256": "296f4265e19630b46bb48acede5b46770c7fb77091d2b5cf5ff10c73af8112e0",
+    "bytes": 21096,
+    "accessed": "2026-10-19 Europe/Berlin"
+  },
+  {
+    "file": "leeno_h1_13",
+    "url": "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814000445&dcmNo=11527283&eleId=13&offset=153219&length=14538&dtd=dart4.xsd&title=4.+%EB%A7%A4%EC%B6%9C+%EB%B0%8F+%EC%88%98%EC%A3%BC%EC%83%81%ED%99%A9",
+    "sha256": "c65f4aee05b5798ecab77d70a78ad6d8527076df635483f55fb18644a680ac4a",
+    "bytes": 15885,
+    "accessed": "2026-10-19 Europe/Berlin"
+  },
+  {
+    "file": "leeno_h1_15",
+    "url": "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814000445&dcmNo=11527283&eleId=15&offset=185281&length=49564&dtd=dart4.xsd&title=6.+%EC%A3%BC%EC%9A%94%EA%B3%84%EC%95%BD+%EB%B0%8F+%EC%97%B0%EA%B5%AC%EA%B0%9C%EB%B0%9C%ED%99%9C%EB%8F%99",
+    "sha256": "71a8d9a57faeacc248697871eae9948a0d0a6f8f2affc287f85d7d22dd5a501d",
+    "bytes": 45422,
+    "accessed": "2026-10-19 Europe/Berlin"
+  },
+  {
+    "file": "leeno_h1_16",
+    "url": "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814000445&dcmNo=11527283&eleId=16&offset=234849&length=26005&dtd=dart4.xsd&title=7.+%EA%B8%B0%ED%83%80+%EC%B0%B8%EA%B3%A0%EC%82%AC%ED%95%AD",
+    "sha256": "4899856cf77b20c7a3016c0e6050933767f9e467949d04749513827628276292",
+    "bytes": 29985,
+    "accessed": "2026-10-19 Europe/Berlin"
+  },
+  {
+    "file": "leeno_h1_18",
+    "url": "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814000445&dcmNo=11527283&eleId=18&offset=261057&length=10248&dtd=dart4.xsd&title=1.+%EC%9A%94%EC%95%BD%EC%9E%AC%EB%AC%B4%EC%A0%95%EB%B3%B4",
+    "sha256": "6a36c7c5956d88039a0b07602cf56fd6a907ee4a9019aff06cb77e0de1f421cf",
+    "bytes": 9416,
+    "accessed": "2026-10-19 Europe/Berlin"
+  },
+  {
+    "file": "leeno_h1_21",
+    "url": "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814000445&dcmNo=11527283&eleId=21&offset=272052&length=94997&dtd=dart4.xsd&title=4.+%EC%9E%AC%EB%AC%B4%EC%A0%9C%ED%91%9C",
+    "sha256": "d3c80c8ace6514cd102f6af0b6037c0edb9e3e8e0992228e5be7ffe34c30e825",
+    "bytes": 32041,
+    "accessed": "2026-10-19 Europe/Berlin"
+  },
+  {
+    "file": "leeno_h1_26",
+    "url": "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814000445&dcmNo=11527283&eleId=26&offset=367053&length=999375&dtd=dart4.xsd&title=5.+%EC%9E%AC%EB%AC%B4%EC%A0%9C%ED%91%9C+%EC%A3%BC%EC%84%9D",
+    "sha256": "de65ee2db46d0141246f28744a169f365b2124f04782a120140ea2ffc9c856b8",
+    "bytes": 344493,
+    "accessed": "2026-10-19 Europe/Berlin"
+  },
+  {
+    "file": "leeno_h1_61",
+    "url": "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814000445&dcmNo=11527283&eleId=61&offset=1352129&length=14329&dtd=dart4.xsd&title=32.+%EB%B6%80%EB%AC%B8%EB%B3%84+%EB%B3%B4%EA%B3%A0",
+    "sha256": "adec8eaad7508fd6720d29d9245a39f7e450f3d365f5426b714d13fc31a037da",
+    "bytes": 6018,
+    "accessed": "2026-10-19 Europe/Berlin"
+  },
+  {
+    "file": "leeno_h1_62",
+    "url": "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814000445&dcmNo=11527283&eleId=62&offset=1366458&length=20300&dtd=dart4.xsd&title=6.+%EB%B0%B0%EB%8B%B9%EC%97%90+%EA%B4%80%ED%95%9C+%EC%82%AC%ED%95%AD",
+    "sha256": "455aa9cdf03bbe9456db09df30449fcc9c4042a237a03b37726e316a59392253",
+    "bytes": 14816,
+    "accessed": "2026-10-19 Europe/Berlin"
+  },
+  {
+    "file": "leeno_h1_7",
+    "url": "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814000445&dcmNo=11527283&eleId=7&offset=56951&length=51718&dtd=dart4.xsd&title=4.+%EC%A3%BC%EC%8B%9D%EC%9D%98+%EC%B4%9D%EC%88%98+%EB%93%B1",
+    "sha256": "e855d239cbf66798e3bd59476f0cddee2b243d25b923852f5a23be058d6ea698",
+    "bytes": 32317,
+    "accessed": "2026-10-19 Europe/Berlin"
+  },
+  {
+    "file": "leeno_h1_83",
+    "url": "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814000445&dcmNo=11527283&eleId=83&offset=1618188&length=39602&dtd=dart4.xsd&title=1.+%EC%9E%84%EC%9B%90+%EB%B0%8F+%EC%A7%81%EC%9B%90+%EB%93%B1%EC%9D%98+%ED%98%84%ED%99%A9",
+    "sha256": "a08bcf13f278086362d111e1991a99bc42a6ee87950da617c84537e724914d87",
+    "bytes": 27360,
+    "accessed": "2026-10-19 Europe/Berlin"
+  },
+  {
+    "file": "leeno_ir_body",
+    "url": "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260821900135&dcmNo=11544786&eleId=0&offset=0&length=0&dtd=HTML",
+    "sha256": "a7983a50d37c2952df248bc27eee47050f0ccf36eb86a2858e13bfcc0f1ef077",
+    "bytes": 6683,
+    "accessed": "2026-10-19 Europe/Berlin"
+  },
+  {
+    "file": "valueup",
+    "url": "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260326900771&dcmNo=11181210&eleId=0&offset=0&length=0&dtd=HTML",
+    "sha256": "cbe9042388469dcd2795fd017c183a29ec5917d05967357ede4ba76a2c9a5f9d",
+    "bytes": 7027,
+    "accessed": "2026-10-19 Europe/Berlin"
+  }
+]
